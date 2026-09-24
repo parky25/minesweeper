@@ -1,0 +1,28 @@
+* {
+  box-sizing: border-box;
+}
+#board {
+  display: grid;
+  grid-template-columns: repeat(9, 30px);
+}
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-family: sans-serif;
+  user-select: none;
+  width: 30px;
+  height: 30px;
+  background-color: lightgray;
+  border: 1px solid gray; 
+}
+.open {
+  background-color: white;
+}
+.exploded {
+  background-color: red;
+}
+.active {
+  background-color: yellow;
+}
