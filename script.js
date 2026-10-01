@@ -1,4 +1,5 @@
 const board = document.querySelector('#board');
+const winMessage = document.querySelector('#winMessage');
 let flagMode = false;
 let over = false;
 let openCount = 0;
@@ -13,6 +14,9 @@ function openCell(r, c) {
   if (grid[r][c].isOpen) {
     return;
   }
+  if (grid[r][c].isFlagged) {
+    return;
+  }
   else {
     grid[r][c].isOpen = true;
     grid[r][c].element.classList.add('open');
@@ -22,8 +26,8 @@ function openCell(r, c) {
     else {
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-          nr = r + dr;
-          nc = c + dc;
+          let nr = r + dr;
+          let nc = c + dc;
           if (!((dc === 0) && (dr === 0))) {
             openCell(nr, nc);
           } 
@@ -59,67 +63,83 @@ function gameOver() {
 
 // 게임 승리
 function gameWin() {
-  const message = document.querySelector('#winMessage');
-  message.textContent = '🎉 승리!';
+  winMessage.textContent = '🎉 승리!';
+  over = true;
 }
 
-// 셀 생성 / 그리드에 저장 / 클릭 인식 리스너 등록
+// 게임 첫 시작
 const grid = [];
-for (let r = 0; r < size; r++) {
-  const gridSub = [];
-  for (let c = 0; c < size; c++) {
-    const cell = document.createElement('div');
-    cell.classList.add('cell');
-    board.appendChild(cell);
-    gridSub.push({
-      element: cell,
-      isMine: false,
-      count: 0,
-      isOpen: false,
-      isFlagged: false
-    });
-    cell.addEventListener('click', function () {
-      if (over) {
-        return;
-      }
-      if (flagMode) {
-        flagToggle(r, c);
-      }
-      else if (!(grid[r][c].isFlagged)){
-        if (grid[r][c].isMine) {
-          grid[r][c].element.classList.add('exploded');
-          gameOver();
-        }
-        else {
-          openCell(r, c);
-        }
-      }
-    });
-  }
-  grid.push(gridSub);
-}
+gameStart();
 
+// 게임 재시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
+function gameStart() {
+  board.replaceChildren();
+  grid.length = 0;
+  over = false;
+  openCount = 0;
+  winMessage.textContent = '';
+  for (let r = 0; r < size; r++) {
+    const gridSub = [];
+    for (let c = 0; c < size; c++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      board.appendChild(cell);
+      gridSub.push({
+        element: cell,
+        isMine: false,
+        count: 0,
+        isOpen: false,
+        isFlagged: false
+      });
+      cell.addEventListener('click', function () {
+        if (over) {
+          return;
+        }
+        if (flagMode) {
+          flagToggle(r, c);
+        }
+        else if (!(grid[r][c].isFlagged)){
+          if (grid[r][c].isMine) {
+            grid[r][c].element.classList.add('exploded');
+            gameOver();
+          }
+          else {
+            openCell(r, c);
+          }
+        }
+      });
+    }
+    grid.push(gridSub);
+  }
+  mineCreate();
+  mineNumCount();
+}
+  
 // 지뢰 생성
-let mineCount = 0;
-while (mineCount < mineTotal) {
-  let r = Math.floor(Math.random() * size);
-  let c = Math.floor(Math.random() * size);
-  if (!grid[r][c].isMine) {
-    grid[r][c].isMine = true;
-    mineCount++;
+function mineCreate() {
+  let mineCount = 0;
+  while (mineCount < mineTotal) {
+    let r = Math.floor(Math.random() * size);
+    let c = Math.floor(Math.random() * size);
+    if (!grid[r][c].isMine) {
+      grid[r][c].isMine = true;
+      mineCount++;
+    }
   }
 }
 
 // 주변 지뢰 개수 count
-for (let r = 0; r < size; r++) {
-  for (let c = 0; c < size; c++) {
-    if (!grid[r][c].isMine) {
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          nr = r + dr;
-          nc = c + dc;
-          if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-            if (grid[nr][nc].isMine) {grid[r][c].count++;}
+function mineNumCount() {
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (!grid[r][c].isMine) {
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            let nr = r + dr;
+            let nc = c + dc;
+            if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+              if (grid[nr][nc].isMine) {grid[r][c].count++;}
+            }
           }
         }
       }
@@ -134,3 +154,9 @@ flagBtn.addEventListener('click', function() {
   flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
   flagBtn.classList.toggle('active');
 });
+
+// 재시작 버튼
+const startBtn = document.querySelector('#startBtn');
+startBtn.addEventListener('click', function() {
+  gameStart();
+})
