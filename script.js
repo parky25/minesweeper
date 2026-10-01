@@ -3,8 +3,9 @@ const winMessage = document.querySelector('#winMessage');
 let flagMode = false;
 let over = false;
 let openCount = 0;
-let size = 9;
+let size = 0;
 let mineTotal = 10;
+const grid = [];
 
 // 셀 열기 함수
 function openCell(r, c) {
@@ -67,11 +68,41 @@ function gameWin() {
   over = true;
 }
 
-// 게임 첫 시작
-const grid = [];
-gameStart();
+// 게임 준비 화면
+const difficulty = document.querySelector('#difficulty')
+const easyButton = document.createElement('button');
+difficulty.appendChild(easyButton);
+easyButton.textContent = '쉬움';
+easyButton.addEventListener('click', function() {
+  size = 9;
+  gameScreen();
+  gameStart();
+});
+const normalButton = document.createElement('button');
+difficulty.appendChild(normalButton);
+normalButton.textContent = '보통';
+normalButton.addEventListener('click', function() {
+  size = 16;
+  gameScreen();
+  gameStart();
+});
+const hardButton = document.createElement('button');
+difficulty.appendChild(hardButton);
+hardButton.textContent = '어려움';
+hardButton.addEventListener('click', function() {
+  size = 22;
+  gameScreen();
+  gameStart();
+});
 
-// 게임 재시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
+//게임 화면 전환
+function gameScreen() {
+  difficulty.replaceChildren();
+  flagBtnAdd();
+  startBtnAdd();
+}
+
+// 게임 시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
 function gameStart() {
   board.replaceChildren();
   grid.length = 0;
@@ -148,15 +179,25 @@ function mineNumCount() {
 }
 
 // 깃발 버튼
-const flagBtn = document.querySelector('#flagBtn');
-flagBtn.addEventListener('click', function() {
-  flagMode = !flagMode;
-  flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
-  flagBtn.classList.toggle('active');
-});
+function flagBtnAdd() {
+  const flagBtn = document.createElement('button');
+  const flagBtnBoard = document.querySelector('#flagBtnBoard');
+  flagBtnBoard.appendChild(flagBtn);
+  flagBtn.textContent = '깃발 모드: 꺼짐';
+  flagBtn.addEventListener('click', function() {
+    flagMode = !flagMode;
+    flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
+    flagBtn.classList.toggle('active');
+  });
+}
 
 // 재시작 버튼
-const startBtn = document.querySelector('#startBtn');
-startBtn.addEventListener('click', function() {
-  gameStart();
-})
+function startBtnAdd() {
+  const startBtn = document.createElement('button');
+  const startBtnBoard = document.querySelector('#startBtnBoard');
+  startBtnBoard.appendChild(startBtn);
+  startBtn.textContent = '재시작';
+  startBtn.addEventListener('click', function() {
+    gameStart();
+  })
+}
