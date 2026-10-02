@@ -78,36 +78,10 @@ function mainScreen() {
   topBtn.replaceChildren();
   board.replaceChildren();
   bottomBtn.replaceChildren();
-  const easyButton = document.createElement('button');
-  topBtn.appendChild(easyButton);
-  easyButton.textContent = '쉬움';
-  easyButton.addEventListener('click', function() {
-    size = 9;
-    board.style.setProperty('--size', size);
-    mineTotal = 10;
-    gameScreen();
-    gameStart();
-  });
-  const normalButton = document.createElement('button');
-  topBtn.appendChild(normalButton);
-  normalButton.textContent = '보통';
-  normalButton.addEventListener('click', function() {
-    size = 16;
-    board.style.setProperty('--size', size);
-    mineTotal = 40;
-    gameScreen();
-    gameStart();
-  });
-  const hardButton = document.createElement('button');
-  topBtn.appendChild(hardButton);
-  hardButton.textContent = '어려움';
-  hardButton.addEventListener('click', function() {
-    size = 22;
-    board.style.setProperty('--size', size);
-    mineTotal = 99;
-    gameScreen();
-    gameStart();
-  });
+  winMessage.textContent = '';
+  diffBtnAdd('쉬움', 9, 10);
+  diffBtnAdd('보통', 16, 40);
+  diffBtnAdd('어려움', 22, 99);
 }
 
 //게임 화면 전환
@@ -146,16 +120,14 @@ function gameStart() {
           flagToggle(r, c);
         }
         else if (!(grid[r][c].isFlagged)){
-          if (grid[r][c].isMine) {
-            if (openCount === 0) {
-              mineCreate(r, c);
-              mineNumCount();
-              openCell(r, c);
-            }
-            else {
-              grid[r][c].element.classList.add('exploded');
-              gameOver();
-            }
+          if (openCount === 0) {
+            mineCreate(r, c);
+            mineNumCount();
+            openCell(r, c);
+          }
+          else if (grid[r][c].isMine) {       
+            grid[r][c].element.classList.add('exploded');
+            gameOver();
           }
           else {
             openCell(r, c);
@@ -165,27 +137,19 @@ function gameStart() {
     }
     grid.push(gridSub);
   }
-  mineCreate(-1, -1);
-  mineNumCount();
 }
   
 // 지뢰 생성
 function mineCreate(fr, fc) {
-  if (fr >= 0) {
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        grid[i][j].isMine = false;
-        grid[i][j].count = 0;
-      }
-    }
-  }
   let mineCount = 0;
   while (mineCount < mineTotal) {
     let r = Math.floor(Math.random() * size);
     let c = Math.floor(Math.random() * size);
-    if (!grid[r][c].isMine && !((fr === r) && (fc === c))) {
-      grid[r][c].isMine = true;
-      mineCount++;
+    if (!grid[r][c].isMine) {
+      if ((Math.abs(r - fr) > 1) || (Math.abs(c - fc) > 1)) {
+        grid[r][c].isMine = true;
+        mineCount++;
+      }
     }
   }
 }
@@ -231,12 +195,26 @@ function startBtnAdd() {
   })
 }
 
-// 메인화면
+// 메인화면 버튼
 function mainBtnAdd() {
   const mainBtn = document.createElement('button');
   bottomBtn.appendChild(mainBtn);
   mainBtn.textContent = '메인화면으로';
   mainBtn.addEventListener('click', function() {
     mainScreen();
+  })
+}
+
+// 난이도 버튼
+function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
+  const diffBtn = document.createElement('button');
+  topBtn.appendChild(diffBtn);
+  diffBtn.textContent = diff;
+  diffBtn.addEventListener('click', function() {
+    size = sizeDiff;
+    board.style.setProperty('--size', size);
+    mineTotal = mineTotalDiff;
+    gameScreen();
+    gameStart(); 
   })
 }
