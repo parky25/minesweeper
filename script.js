@@ -47,6 +47,31 @@ function openCell(r, c) {
   }
 }
 
+// 코드(숫자 칸 눌러 주변 열기)
+function chord(r, c) {
+  let surNum = 0;
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      let nr = r + dr;
+      let nc = c + dc;
+      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+        if (grid[nr][nc].isFlagged) {surNum++;}
+      }
+    }
+  }
+  if (surNum >= grid[r][c].count) {
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        let nr = r + dr;
+        let nc = c + dc;
+        if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+          click(nr, nc);
+        }
+      }
+    } 
+  }
+}
+
 // 깃발 토글
 function flagToggle(r, c) {
   if (!(grid[r][c].isOpen)) {
@@ -119,19 +144,11 @@ function gameStart() {
         if (flagMode) {
           flagToggle(r, c);
         }
-        else if (!(grid[r][c].isFlagged)){
-          if (openCount === 0) {
-            mineCreate(r, c);
-            mineNumCount();
-            openCell(r, c);
-          }
-          else if (grid[r][c].isMine) {       
-            grid[r][c].element.classList.add('exploded');
-            gameOver();
-          }
-          else {
-            openCell(r, c);
-          }
+        else if (grid[r][c].isOpen) {
+          chord(r, c);
+        }
+        else {
+          click(r, c);
         }
       });
     }
@@ -169,6 +186,24 @@ function mineNumCount() {
           }
         }
       }
+    }
+  }
+}
+
+// 클릭
+function click(r, c) {
+  if (!(grid[r][c].isFlagged)){
+    if (openCount === 0) {
+      mineCreate(r, c);
+      mineNumCount();
+      openCell(r, c);
+    }
+    else if (grid[r][c].isMine) {       
+      grid[r][c].element.classList.add('exploded');
+      gameOver();
+    }
+    else {
+      openCell(r, c);
     }
   }
 }
