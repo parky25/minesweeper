@@ -1,4 +1,7 @@
+'use strict'
 const board = document.querySelector('#board');
+const topBtn = document.querySelector('#topBtn');
+const bottomBtn = document.querySelector('bottomBtn');
 const winMessage = document.querySelector('#winMessage');
 let flagMode = false;
 let over = false;
@@ -6,6 +9,8 @@ let size = 0;
 let openCount = 0;
 let mineTotal = 10;
 const grid = [];
+
+mainScreen();
 
 // 셀 열기 함수
 function openCell(r, c) {
@@ -69,40 +74,48 @@ function gameWin() {
 }
 
 // 게임 준비 화면
-const difficulty = document.querySelector('#difficulty')
-const easyButton = document.createElement('button');
-difficulty.appendChild(easyButton);
-easyButton.textContent = '쉬움';
-easyButton.addEventListener('click', function() {
-  size = 9;
-  board.style.setProperty('--size', size);
-  gameScreen();
-  gameStart();
-});
-const normalButton = document.createElement('button');
-difficulty.appendChild(normalButton);
-normalButton.textContent = '보통';
-normalButton.addEventListener('click', function() {
-  size = 16;
-  board.style.setProperty('--size', size);
-  gameScreen();
-  gameStart();
-});
-const hardButton = document.createElement('button');
-difficulty.appendChild(hardButton);
-hardButton.textContent = '어려움';
-hardButton.addEventListener('click', function() {
-  size = 22;
-  board.style.setProperty('--size', size);
-  gameScreen();
-  gameStart();
-});
+function mainScreen() {
+  topBtn.replaceChildren();
+  board.replaceChildren();
+  bottomBtn.replaceChildren();
+  const easyButton = document.createElement('button');
+  topBtn.appendChild(easyButton);
+  easyButton.textContent = '쉬움';
+  easyButton.addEventListener('click', function() {
+    size = 9;
+    board.style.setProperty('--size', size);
+    mineTotal = 10;
+    gameScreen();
+    gameStart();
+  });
+  const normalButton = document.createElement('button');
+  topBtn.appendChild(normalButton);
+  normalButton.textContent = '보통';
+  normalButton.addEventListener('click', function() {
+    size = 16;
+    board.style.setProperty('--size', size);
+    mineTotal = 40;
+    gameScreen();
+    gameStart();
+  });
+  const hardButton = document.createElement('button');
+  topBtn.appendChild(hardButton);
+  hardButton.textContent = '어려움';
+  hardButton.addEventListener('click', function() {
+    size = 22;
+    board.style.setProperty('--size', size);
+    mineTotal = 99;
+    gameScreen();
+    gameStart();
+  });
+}
 
 //게임 화면 전환
 function gameScreen() {
-  difficulty.replaceChildren();
+  topBtn.replaceChildren();
   flagBtnAdd();
   startBtnAdd();
+  mainBtnAdd();
 }
 
 // 게임 시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
@@ -199,8 +212,7 @@ function mineNumCount() {
 // 깃발 버튼
 function flagBtnAdd() {
   const flagBtn = document.createElement('button');
-  const flagBtnBoard = document.querySelector('#flagBtnBoard');
-  flagBtnBoard.appendChild(flagBtn);
+  topBtn.appendChild(flagBtn);
   flagBtn.textContent = '깃발 모드: 꺼짐';
   flagBtn.addEventListener('click', function() {
     flagMode = !flagMode;
@@ -212,10 +224,19 @@ function flagBtnAdd() {
 // 재시작 버튼
 function startBtnAdd() {
   const startBtn = document.createElement('button');
-  const startBtnBoard = document.querySelector('#startBtnBoard');
-  startBtnBoard.appendChild(startBtn);
+  bottomBtn.appendChild(startBtn);
   startBtn.textContent = '재시작';
   startBtn.addEventListener('click', function() {
     gameStart();
+  })
+}
+
+// 메인화면
+function mainBtnAdd() {
+  const mainBtn = document.createElement('button');
+  bottomBtn.appendChild(mainBtn);
+  mainBtn.textContent = '메인화면으로';
+  mainBtn.addEventListener('click', function() {
+    mainScreen();
   })
 }
