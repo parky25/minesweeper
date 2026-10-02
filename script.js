@@ -1,7 +1,7 @@
 'use strict'
 const board = document.querySelector('#board');
 const topBtn = document.querySelector('#topBtn');
-const bottomBtn = document.querySelector('bottomBtn');
+const bottomBtn = document.querySelector('#bottomBtn');
 const winMessage = document.querySelector('#winMessage');
 let flagMode = false;
 let over = false;
