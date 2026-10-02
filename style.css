@@ -3,7 +3,8 @@
 }
 #board {
   display: grid;
-  grid-template-columns: repeat(9, 30px);
+  --size: 9;
+  grid-template-columns: repeat(var(--size), 30px);
 }
 .cell {
   display: flex;

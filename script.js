@@ -2,8 +2,8 @@ const board = document.querySelector('#board');
 const winMessage = document.querySelector('#winMessage');
 let flagMode = false;
 let over = false;
-let openCount = 0;
 let size = 0;
+let openCount = 0;
 let mineTotal = 10;
 const grid = [];
 
@@ -75,6 +75,7 @@ difficulty.appendChild(easyButton);
 easyButton.textContent = '쉬움';
 easyButton.addEventListener('click', function() {
   size = 9;
+  board.style.setProperty('--size', size);
   gameScreen();
   gameStart();
 });
@@ -83,6 +84,7 @@ difficulty.appendChild(normalButton);
 normalButton.textContent = '보통';
 normalButton.addEventListener('click', function() {
   size = 16;
+  board.style.setProperty('--size', size);
   gameScreen();
   gameStart();
 });
@@ -91,6 +93,7 @@ difficulty.appendChild(hardButton);
 hardButton.textContent = '어려움';
 hardButton.addEventListener('click', function() {
   size = 22;
+  board.style.setProperty('--size', size);
   gameScreen();
   gameStart();
 });
@@ -131,8 +134,15 @@ function gameStart() {
         }
         else if (!(grid[r][c].isFlagged)){
           if (grid[r][c].isMine) {
-            grid[r][c].element.classList.add('exploded');
-            gameOver();
+            if (openCount === 0) {
+              mineCreate(r, c);
+              mineNumCount();
+              openCell(r, c);
+            }
+            else {
+              grid[r][c].element.classList.add('exploded');
+              gameOver();
+            }
           }
           else {
             openCell(r, c);
@@ -142,17 +152,25 @@ function gameStart() {
     }
     grid.push(gridSub);
   }
-  mineCreate();
+  mineCreate(-1, -1);
   mineNumCount();
 }
   
 // 지뢰 생성
-function mineCreate() {
+function mineCreate(fr, fc) {
+  if (fr >= 0) {
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        grid[i][j].isMine = false;
+        grid[i][j].count = 0;
+      }
+    }
+  }
   let mineCount = 0;
   while (mineCount < mineTotal) {
     let r = Math.floor(Math.random() * size);
     let c = Math.floor(Math.random() * size);
-    if (!grid[r][c].isMine) {
+    if (!grid[r][c].isMine && !((fr === r) && (fc === c))) {
       grid[r][c].isMine = true;
       mineCount++;
     }
