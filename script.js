@@ -2,19 +2,25 @@
 const board = document.querySelector('#board');
 const topBtn = document.querySelector('#topBtn');
 const bottomBtn = document.querySelector('#bottomBtn');
+const timeMessage = document.querySelector('#timeMessage');
 const winMessage = document.querySelector('#winMessage');
+const mineNumMessage = document.querySelector('#mineNumMessage');
+let timer;
+let startTime;
 let flagMode = false;
 let over = false;
 let size = 0;
 let openCount = 0;
 let mineTotal = 10;
+let flagCount = 0;
+let mineLeft = mineTotal - flagCount;
 const grid = [];
 
 mainScreen();
 
 // 셀 열기 함수
 function openCell(r, c) {
-  if (r < 0 || r >= size || c < 0 || c >= size) {
+  if (over) {
     return;
   }
   if (grid[r][c].isOpen) {
@@ -30,15 +36,9 @@ function openCell(r, c) {
       grid[r][c].element.textContent = grid[r][c].count;
     }
     else {
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          let nr = r + dr;
-          let nc = c + dc;
-          if (!((dc === 0) && (dr === 0))) {
-            openCell(nr, nc);
-          } 
-        }
-      }
+      repeat8(r, c, function (nr, nc) {
+        openCell(nr, nc);
+      });
     }
     openCount++;
     if (openCount === size*size - mineTotal) {
@@ -49,33 +49,35 @@ function openCell(r, c) {
 
 // 코드(숫자 칸 눌러 주변 열기)
 function chord(r, c) {
-  let surNum = 0;
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      let nr = r + dr;
-      let nc = c + dc;
-      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-        if (grid[nr][nc].isFlagged) {surNum++;}
-      }
-    }
+  if (over) {
+    return;
   }
-  if (surNum >= grid[r][c].count) {
-    for (let dr = -1; dr <= 1; dr++) {
-      for (let dc = -1; dc <= 1; dc++) {
-        let nr = r + dr;
-        let nc = c + dc;
-        if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-          click(nr, nc);
-        }
-      }
-    } 
+  let surNum = 0;
+  repeat8(r, c, function (nr, nc) {
+    if (grid[nr][nc].isFlagged) {surNum++;}
+  });
+  if (surNum === grid[r][c].count) {
+    repeat8(r, c, function (nr, nc) {
+      click(nr, nc);
+    });
   }
 }
 
 // 깃발 토글
 function flagToggle(r, c) {
+  if (over) {
+    return;
+  }
   if (!(grid[r][c].isOpen)) {
     grid[r][c].isFlagged = !(grid[r][c].isFlagged);
+    if (grid[r][c].isFlagged) {
+      flagCount++;
+    }
+    else {
+      flagCount--;
+    }
+    mineLeft = mineTotal - flagCount;
+    mineNumMessage.textContent = `남은 지뢰 수: ${mineLeft}`;
     grid[r][c].element.textContent = grid[r][c].isFlagged ? '🚩' : '';
   }
 }
@@ -83,6 +85,7 @@ function flagToggle(r, c) {
 // 게임 종료
 function gameOver() {
   over = true;
+  clearInterval(timer);
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       if (grid[r][c].isMine) {
@@ -96,6 +99,7 @@ function gameOver() {
 function gameWin() {
   winMessage.textContent = '🎉 승리!';
   over = true;
+  clearInterval(timer);
 }
 
 // 게임 준비 화면
@@ -104,6 +108,9 @@ function mainScreen() {
   board.replaceChildren();
   bottomBtn.replaceChildren();
   winMessage.textContent = '';
+  timeMessage.textContent = '';
+  mineNumMessage.textContent = '';
+  clearInterval(timer);
   diffBtnAdd('쉬움', 9, 10);
   diffBtnAdd('보통', 16, 40);
   diffBtnAdd('어려움', 22, 99);
@@ -123,7 +130,12 @@ function gameStart() {
   grid.length = 0;
   over = false;
   openCount = 0;
+  flagCount = 0;
   winMessage.textContent = '';
+  clearInterval(timer);
+  timeMessage.textContent = '지난 시간: 0.0s';
+  mineLeft = mineTotal - flagCount;
+  mineNumMessage.textContent = `남은 지뢰 수: ${mineLeft}`;
   for (let r = 0; r < size; r++) {
     const gridSub = [];
     for (let c = 0; c < size; c++) {
@@ -138,9 +150,6 @@ function gameStart() {
         isFlagged: false
       });
       cell.addEventListener('click', function () {
-        if (over) {
-          return;
-        }
         if (flagMode) {
           flagToggle(r, c);
         }
@@ -176,15 +185,11 @@ function mineNumCount() {
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       if (!grid[r][c].isMine) {
-        for (let dr = -1; dr <= 1; dr++) {
-          for (let dc = -1; dc <= 1; dc++) {
-            let nr = r + dr;
-            let nc = c + dc;
-            if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-              if (grid[nr][nc].isMine) {grid[r][c].count++;}
-            }
+        repeat8(r, c, function (nr, nc) {
+          if (grid[nr][nc].isMine) {
+            grid[r][c].count++;
           }
-        }
+        });
       }
     }
   }
@@ -197,6 +202,7 @@ function click(r, c) {
       mineCreate(r, c);
       mineNumCount();
       openCell(r, c);
+      timeCount();
     }
     else if (grid[r][c].isMine) {       
       grid[r][c].element.classList.add('exploded');
@@ -210,6 +216,7 @@ function click(r, c) {
 
 // 깃발 버튼
 function flagBtnAdd() {
+  flagMode = false;
   const flagBtn = document.createElement('button');
   topBtn.appendChild(flagBtn);
   flagBtn.textContent = '깃발 모드: 꺼짐';
@@ -226,6 +233,7 @@ function startBtnAdd() {
   bottomBtn.appendChild(startBtn);
   startBtn.textContent = '재시작';
   startBtn.addEventListener('click', function() {
+    clearInterval(timer);
     gameStart();
   })
 }
@@ -236,6 +244,7 @@ function mainBtnAdd() {
   bottomBtn.appendChild(mainBtn);
   mainBtn.textContent = '메인화면으로';
   mainBtn.addEventListener('click', function() {
+    clearInterval(timer);
     mainScreen();
   })
 }
@@ -252,4 +261,29 @@ function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
     gameScreen();
     gameStart(); 
   })
+}
+
+// 시간 표시
+function timeCount() {
+  startTime = Date.now();
+  timer = setInterval(function () {
+    let curTime = Date.now();
+    let time = ((curTime - startTime) / 1000).toFixed(1);
+    timeMessage.textContent = `지난 시간: ${time}s`;
+  }, 5); 
+}
+
+// 주변 8칸 순회
+function repeat8(r, c, action) {
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      let nr = r + dr;
+      let nc = c + dc;
+      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+        if (!((dc === 0) && (dr === 0))) {
+          action(nr, nc);
+        }
+      }
+    }
+  }
 }
