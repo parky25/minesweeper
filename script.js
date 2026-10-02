@@ -7,6 +7,9 @@ const winMessage = document.querySelector('#winMessage');
 const mineNumMessage = document.querySelector('#mineNumMessage');
 let timer;
 let startTime;
+let clicking = false;
+let clickLong;
+let clickShort = true;
 let flagMode = false;
 let over = false;
 let size = 0;
@@ -17,6 +20,9 @@ let mineLeft = mineTotal - flagCount;
 const grid = [];
 
 mainScreen();
+board.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+})
 
 // 셀 열기 함수
 function openCell(r, c) {
@@ -69,6 +75,7 @@ function flagToggle(r, c) {
     return;
   }
   if (!(grid[r][c].isOpen)) {
+    navigator.vibrate(30);
     grid[r][c].isFlagged = !(grid[r][c].isFlagged);
     if (grid[r][c].isFlagged) {
       flagCount++;
@@ -150,6 +157,9 @@ function gameStart() {
         isFlagged: false
       });
       cell.addEventListener('click', function () {
+        if (!clickShort) {
+          return;
+        }
         if (flagMode) {
           flagToggle(r, c);
         }
@@ -159,6 +169,26 @@ function gameStart() {
         else {
           click(r, c);
         }
+      });
+      cell.addEventListener('pointerdown', function() {
+        clicking = true;
+        clickShort = true;
+        clickLong = setTimeout(function () {
+          if (clicking) {
+            flagToggle(r, c);
+            clicking = false;
+            clickShort = false;
+          }
+        }, 500);
+      });
+      cell.addEventListener('pointerup', function() {
+        clicking = false;
+      });
+      cell.addEventListener('pointerleave', function() {
+        clicking = false;
+      });
+      cell.addEventListener('pointercancel', function() {
+        clicking = false;
       });
     }
     grid.push(gridSub);
