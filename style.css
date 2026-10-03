@@ -4,12 +4,23 @@
 body {
   margin: 0;
 }
+h1 {
+  margin: 0;
+}
 #mainScreen {
   display: flex;
+  flex-direction: column;
   min-height: 100dvh;
   align-items: center;
   justify-content: center;
-  padding-bottom: 15dvh;
+}
+#mainScreen::before {
+  content: '';
+  flex-grow: 2;
+}
+#mainScreen::after {
+  content: '';
+  flex-grow: 2.5;
 }
 #mainScreenContent {
   display: flex;
@@ -71,6 +82,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: calc(var(--cell)/1.5);
   font-weight: bold;
   font-family: sans-serif;
   user-select: none;
@@ -100,8 +112,8 @@ body {
   margin-right: 3dvh;
 }
 .clickBtn {
-  width: 18dvh;
-  height: 4.5dvh;
+  width: 120px;
+  height: 35px;
 }
 .scoreText {
   font-size: 4dvh;

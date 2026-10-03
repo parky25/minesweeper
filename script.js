@@ -17,7 +17,6 @@ const normalBest = document.querySelector('#normalBest');
 const hardBest = document.querySelector('#hardBest');
 let timer;
 let startTime;
-let curTime;
 let clickShort = true;
 let clickLong;
 let flagMode = false;
@@ -27,15 +26,14 @@ let difficulty = 'easy';
 let openCount = 0;
 let mineTotal = 10;
 let flagCount = 0;
-let mineLeft = mineTotal - flagCount;
 const grid = [];
-let diffDic = {easy: '쉬움', normal: '보통', hard: '어려움'};
+const diffDic = {easy: '쉬움', normal: '보통', hard: '어려움'};
+const diffScoreBox = {easy: easyBest, normal: normalBest, hard: hardBest};
 
 // 난이도 버튼 추가 및 리스너 장착
 diffBtnAdd('easy', 9, 10);
 diffBtnAdd('normal', 16, 40);
 diffBtnAdd('hard', 22, 99);
-startBtn.textContent = '재시작';
 startBtn.addEventListener('click', function () {
   clearInterval(timer);
   gameStart();
@@ -46,16 +44,13 @@ flagBtn.addEventListener('click', function () {
   flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
   flagBtn.classList.toggle('active');
 });
-mainBtn.textContent = '메인화면으로';
 mainBtn.addEventListener('click', function () {
   clearInterval(timer);
   mainScreenShow();
 });
-mainBtn2.textContent = '메인화면으로';
 mainBtn2.addEventListener('click', function () {
   mainScreenShow();
 });
-scoreBtn.textContent = '최고기록';
 scoreBtn.addEventListener('click', function () {
   scoreScreenShow();
 });
@@ -77,21 +72,19 @@ function openCell(r, c) {
   if (grid[r][c].isFlagged) {
     return;
   }
+  grid[r][c].isOpen = true;
+  grid[r][c].element.classList.add('open');
+  if (grid[r][c].count > 0) {
+    grid[r][c].element.textContent = grid[r][c].count;
+  }
   else {
-    grid[r][c].isOpen = true;
-    grid[r][c].element.classList.add('open');
-    if (grid[r][c].count > 0) {
-      grid[r][c].element.textContent = grid[r][c].count;
-    }
-    else {
-      repeat8(r, c, function (nr, nc) {
-        openCell(nr, nc);
-      });
-    }
-    openCount++;
-    if (openCount === size*size - mineTotal) {
-      gameWin();
-    }
+    repeat8(r, c, function (nr, nc) {
+      openCell(nr, nc);
+    });
+  }
+  openCount++;
+  if (openCount === size*size - mineTotal) {
+    gameWin();
   }
 }
 
@@ -127,7 +120,7 @@ function flagToggle(r, c) {
     else {
       flagCount--;
     }
-    mineLeft = mineTotal - flagCount;
+    let mineLeft = mineTotal - flagCount;
     mineNumMessage.textContent = `남은 지뢰 수: ${mineLeft}`;
     grid[r][c].element.textContent = grid[r][c].isFlagged ? '🚩' : '';
   }
@@ -151,10 +144,11 @@ function gameWin() {
   winMessage.textContent = '🎉 승리!';
   over = true;
   clearInterval(timer);
-  let timeRec = ((curTime - startTime) / 1000).toFixed(2);
-  let recName = 'minesweeper-bestscore-' + difficulty;
-  let bestRec = Number(localStorage.getItem('recName'));
-  if (bestRec !== 0) {
+  let curTime = Date.now();
+  let timeRec = Number(((curTime - startTime) / 1000).toFixed(2));
+  let recName = bestscoreStorageName(difficulty);
+  let bestRec = Number(localStorage.getItem(recName));
+  if (localStorage.getItem(recName) !== null) {
     if (timeRec < bestRec) {
       bestRec = timeRec;
       winMessage.textContent = '🎉 승리! 신기록 갱신!';
@@ -179,16 +173,16 @@ function scoreScreenShow() {
   scoreScreen.classList.remove('hidden');
   mainScreen.classList.add('hidden');
   gameScreen.classList.add('hidden');
-  scoreWrite('minesweeper-bestscore-easy', easyBest, '쉬움');
-  scoreWrite('minesweeper-bestscore-normal', normalBest, '보통');
-  scoreWrite('minesweeper-bestscore-hard', hardBest, '어려움');
+  for (const key of Object.keys(diffDic)) {
+    scoreWrite(bestscoreStorageName(key), diffScoreBox[key], diffDic[key]);
+  }
 }
 
 //게임 화면 전환
 function gameScreenShow() {
   gameScreen.classList.remove('hidden');
   mainScreen.classList.add('hidden');
-  scoreScreen.classList.add('hideen');
+  scoreScreen.classList.add('hidden');
 }
 
 // 게임 시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
@@ -201,7 +195,7 @@ function gameStart() {
   winMessage.textContent = '';
   clearInterval(timer);
   timeMessage.textContent = '지난 시간: 0.0s';
-  mineLeft = mineTotal - flagCount;
+  let mineLeft = mineTotal - flagCount;
   mineNumMessage.textContent = `남은 지뢰 수: ${mineLeft}`;
   for (let r = 0; r < size; r++) {
     const gridSub = [];
@@ -231,6 +225,7 @@ function gameStart() {
         }
       });
       cell.addEventListener('pointerdown', function() {
+        clearTimeout(clickLong);
         clickShort = true;
         clickLong = setTimeout(function () {
           flagToggle(r, c);
@@ -290,8 +285,8 @@ function click(r, c) {
     if (openCount === 0) {
       mineCreate(r, c);
       mineNumCount();
-      openCell(r, c);
       timeCount();
+      openCell(r, c);
     }
     else if (grid[r][c].isMine) {       
       grid[r][c].element.classList.add('exploded');
@@ -323,20 +318,20 @@ function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
 function timeCount() {
   startTime = Date.now();
   timer = setInterval(function () {
-    curTime = Date.now();
+    let curTime = Date.now();
     let time = ((curTime - startTime) / 1000).toFixed(1);
     timeMessage.textContent = `지난 시간: ${time}s`;
   }, 5);
 }
 
 // 최고기록 쓰기
-function scoreWrite(storageName, elementName, diffName) {
-  let scoreValue = Number(localStorage.getItem(storageName));
-  if (scoreValue === 0) {
-    elementName.textContent = diffName + ': 기록 없음';
+function scoreWrite(storageName, element, diffName) {
+  let scoreValue = localStorage.getItem(storageName);
+  if (scoreValue === null) {
+    element.textContent = diffName + ': 기록 없음';
   }
   else {
-    elementName.textContent = diffName + ': ' + scoreValue + 's';
+    element.textContent = diffName + ': ' + Number(scoreValue) + 's';
   }
 }
 
@@ -353,4 +348,9 @@ function repeat8(r, c, action) {
       }
     }
   }
+}
+
+// 최고기록 로컬 저장소 이름
+function bestscoreStorageName(diff) {
+  return 'minesweeper-bestscore-' + diff;
 }

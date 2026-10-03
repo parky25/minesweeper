@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>지뢰찾기</title>
-  <link rel='stylesheet' href='style.css'>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="mainScreen">
     <div id="mainScreenContent">
-      <div id="title">지뢰찾기</div>
+      <h1 id="title">지뢰찾기</h1>
       <div id="mainScreenBtn">
         <div id="diffBoard"></div>
-        <button id="scoreBtn" class="clickBtn"></button>
+        <button id="scoreBtn" class="clickBtn">최고기록</button>
       </div>
     </div>
   </div>
-  <div id="gameScreen">
+  <div id="gameScreen" class="hidden">
     <div id="gameScreenContent">
       <div id="gameScreenTopMessage">
         <div id="timeMessage"></div>
@@ -27,20 +27,20 @@
       </div>
       <div id="board"></div>
       <div id="bottomBtn">
-        <button id="startBtn"></button>
-        <button id="mainBtn"></button>
+        <button id="startBtn">재시작</button>
+        <button id="mainBtn">메인화면으로</button>
       </div>
       <div id="winMessage"></div>
     </div>
   </div>
-  <div id="scoreScreen">
+  <div id="scoreScreen" class="hidden">
     <div id="scoreBox">
-      <div id="easyBest" class=scoreText></div>
-      <div id="normalBest" class=scoreText></div>
-      <div id="hardBest" class=scoreText></div>
+      <div id="easyBest" class="scoreText"></div>
+      <div id="normalBest" class="scoreText"></div>
+      <div id="hardBest" class="scoreText"></div>
     </div>
     <div id="scoreScreenBtn">
-      <button id="mainBtn2" class="clickBtn"></button>
+      <button id="mainBtn2" class="clickBtn">메인화면으로</button>
     </div>
   </div>
   <script src="script.js"></script>
