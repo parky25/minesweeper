@@ -1,47 +1,63 @@
 'use strict'
 const mainScreen = document.querySelector('#mainScreen');
 const gameScreen = document.querySelector('#gameScreen');
+const scoreScreen = document.querySelector('#scoreScreen');
 const board = document.querySelector('#board');
 const diffBoard = document.querySelector('#diffBoard');
+const scoreBtn = document.querySelector('#scoreBtn');
 const timeMessage = document.querySelector('#timeMessage');
 const mineNumMessage = document.querySelector('#mineNumMessage');
 const flagBtn = document.querySelector('#flagBtn');
 const startBtn = document.querySelector('#startBtn');
 const mainBtn = document.querySelector('#mainBtn');
+const mainBtn2 = document.querySelector('#mainBtn2');
 const winMessage = document.querySelector('#winMessage');
+const easyBest = document.querySelector('#easyBest');
+const normalBest = document.querySelector('#normalBest');
+const hardBest = document.querySelector('#hardBest');
 let timer;
 let startTime;
-let clicking = false;
+let curTime;
 let clickShort = true;
+let clickLong;
 let flagMode = false;
 let over = false;
 let size = 0;
-let difficulty = '쉬움'; 
+let difficulty = 'easy'; 
 let openCount = 0;
 let mineTotal = 10;
 let flagCount = 0;
 let mineLeft = mineTotal - flagCount;
 const grid = [];
+let diffDic = {easy: '쉬움', normal: '보통', hard: '어려움'};
 
 // 난이도 버튼 추가 및 리스너 장착
-diffBtnAdd('쉬움', 9, 10);
-diffBtnAdd('보통', 16, 40);
-diffBtnAdd('어려움', 22, 99);
+diffBtnAdd('easy', 9, 10);
+diffBtnAdd('normal', 16, 40);
+diffBtnAdd('hard', 22, 99);
 startBtn.textContent = '재시작';
-startBtn.addEventListener('click', function() {
+startBtn.addEventListener('click', function () {
   clearInterval(timer);
   gameStart();
 });
 flagBtn.textContent = '깃발 모드: 꺼짐';
-flagBtn.addEventListener('click', function() {
+flagBtn.addEventListener('click', function () {
   flagMode = !flagMode;
   flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
   flagBtn.classList.toggle('active');
 });
 mainBtn.textContent = '메인화면으로';
-mainBtn.addEventListener('click', function() {
+mainBtn.addEventListener('click', function () {
   clearInterval(timer);
   mainScreenShow();
+});
+mainBtn2.textContent = '메인화면으로';
+mainBtn2.addEventListener('click', function () {
+  mainScreenShow();
+});
+scoreBtn.textContent = '최고기록';
+scoreBtn.addEventListener('click', function () {
+  scoreScreenShow();
 });
 
 // 첫 시작
@@ -135,19 +151,40 @@ function gameWin() {
   winMessage.textContent = '🎉 승리!';
   over = true;
   clearInterval(timer);
+  let timeRec = ((curTime - startTime) / 1000).toFixed(2);
+  let recName = 'minesweeper-bestscore-' + difficulty;
+  let bestRec = Number(localStorage.getItem('recName'));
+  if (bestRec !== 0) {
+    if (timeRec < bestRec) {bestRec = timeRec;}
+  }
+  else {
+    bestRec = timeRec;
+  }
+  localStorage.setItem(recName, bestRec);
 }
 
 // 게임 준비 화면
 function mainScreenShow() {
   mainScreen.classList.remove('hidden');
   gameScreen.classList.add('hidden');
+  scoreScreen.classList.add('hidden');
   clearInterval(timer);
+}
+
+function scoreScreenShow() {
+  scoreScreen.classList.remove('hidden');
+  mainScreen.classList.add('hidden');
+  gameScreen.classList.add('hidden');
+  scoreWrite('minesweeper-bestscore-easy', easyBest, '쉬움');
+  scoreWrite('minesweeper-bestscore-normal', normalBest, '보통');
+  scoreWrite('minesweeper-bestscore-hard', hardBest, '어려움');
 }
 
 //게임 화면 전환
 function gameScreenShow() {
   gameScreen.classList.remove('hidden');
   mainScreen.classList.add('hidden');
+  scoreScreen.classList.add('hideen');
 }
 
 // 게임 시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
@@ -266,7 +303,7 @@ function click(r, c) {
 function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
   const diffBtn = document.createElement('button');
   diffBoard.appendChild(diffBtn);
-  diffBtn.textContent = diff;
+  diffBtn.textContent = diffDic[diff];
   diffBtn.addEventListener('click', function() {
     size = sizeDiff;
     board.style.setProperty('--size', size);
@@ -281,10 +318,21 @@ function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
 function timeCount() {
   startTime = Date.now();
   timer = setInterval(function () {
-    let curTime = Date.now();
+    curTime = Date.now();
     let time = ((curTime - startTime) / 1000).toFixed(1);
     timeMessage.textContent = `지난 시간: ${time}s`;
   }, 5);
+}
+
+// 최고기록 쓰기
+function scoreWrite(storageName, elementName, diffName) {
+  let scoreValue = Number(localStorage.getItem(storageName));
+  if (scoreValue === 0) {
+    elementName.textContent = diffName + ': 기록 없음';
+  }
+  else {
+    elementName.textContent = diffName + ': ' + scoreValue + 's';
+  }
 }
 
 // 주변 8칸 순회
