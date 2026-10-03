@@ -1,25 +1,51 @@
 'use strict'
+const mainScreen = document.querySelector('#mainScreen');
+const gameScreen = document.querySelector('#gameScreen');
 const board = document.querySelector('#board');
-const topBtn = document.querySelector('#topBtn');
-const bottomBtn = document.querySelector('#bottomBtn');
+const diffBoard = document.querySelector('#diffBoard');
 const timeMessage = document.querySelector('#timeMessage');
-const winMessage = document.querySelector('#winMessage');
 const mineNumMessage = document.querySelector('#mineNumMessage');
+const flagBtn = document.querySelector('#flagBtn');
+const startBtn = document.querySelector('#startBtn');
+const mainBtn = document.querySelector('#mainBtn');
+const winMessage = document.querySelector('#winMessage');
 let timer;
 let startTime;
 let clicking = false;
-let clickLong;
 let clickShort = true;
 let flagMode = false;
 let over = false;
 let size = 0;
+let difficulty = '쉬움'; 
 let openCount = 0;
 let mineTotal = 10;
 let flagCount = 0;
 let mineLeft = mineTotal - flagCount;
 const grid = [];
 
-mainScreen();
+// 난이도 버튼 추가 및 리스너 장착
+diffBtnAdd('쉬움', 9, 10);
+diffBtnAdd('보통', 16, 40);
+diffBtnAdd('어려움', 22, 99);
+startBtn.textContent = '재시작';
+startBtn.addEventListener('click', function() {
+  clearInterval(timer);
+  gameStart();
+});
+flagBtn.textContent = '깃발 모드: 꺼짐';
+flagBtn.addEventListener('click', function() {
+  flagMode = !flagMode;
+  flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
+  flagBtn.classList.toggle('active');
+});
+mainBtn.textContent = '메인화면으로';
+mainBtn.addEventListener('click', function() {
+  clearInterval(timer);
+  mainScreenShow();
+});
+
+// 첫 시작
+mainScreenShow();
 board.addEventListener('contextmenu', function (e) {
   e.preventDefault();
 })
@@ -75,7 +101,9 @@ function flagToggle(r, c) {
     return;
   }
   if (!(grid[r][c].isOpen)) {
-    navigator.vibrate(30);
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
     grid[r][c].isFlagged = !(grid[r][c].isFlagged);
     if (grid[r][c].isFlagged) {
       flagCount++;
@@ -110,25 +138,16 @@ function gameWin() {
 }
 
 // 게임 준비 화면
-function mainScreen() {
-  topBtn.replaceChildren();
-  board.replaceChildren();
-  bottomBtn.replaceChildren();
-  winMessage.textContent = '';
-  timeMessage.textContent = '';
-  mineNumMessage.textContent = '';
+function mainScreenShow() {
+  mainScreen.classList.remove('hidden');
+  gameScreen.classList.add('hidden');
   clearInterval(timer);
-  diffBtnAdd('쉬움', 9, 10);
-  diffBtnAdd('보통', 16, 40);
-  diffBtnAdd('어려움', 22, 99);
 }
 
 //게임 화면 전환
-function gameScreen() {
-  topBtn.replaceChildren();
-  flagBtnAdd();
-  startBtnAdd();
-  mainBtnAdd();
+function gameScreenShow() {
+  gameScreen.classList.remove('hidden');
+  mainScreen.classList.add('hidden');
 }
 
 // 게임 시작(셀 생성, 그리드에 저장, 클릭 인식 리스너 등록)
@@ -171,24 +190,20 @@ function gameStart() {
         }
       });
       cell.addEventListener('pointerdown', function() {
-        clicking = true;
         clickShort = true;
         clickLong = setTimeout(function () {
-          if (clicking) {
-            flagToggle(r, c);
-            clicking = false;
-            clickShort = false;
-          }
+          flagToggle(r, c);
+          clickShort = false;
         }, 500);
       });
       cell.addEventListener('pointerup', function() {
-        clicking = false;
+        clearTimeout(clickLong);
       });
       cell.addEventListener('pointerleave', function() {
-        clicking = false;
+        clearTimeout(clickLong);
       });
       cell.addEventListener('pointercancel', function() {
-        clicking = false;
+        clearTimeout(clickLong);
       });
     }
     grid.push(gridSub);
@@ -227,6 +242,9 @@ function mineNumCount() {
 
 // 클릭
 function click(r, c) {
+  if (over) {
+    return;
+  }
   if (!(grid[r][c].isFlagged)){
     if (openCount === 0) {
       mineCreate(r, c);
@@ -244,53 +262,19 @@ function click(r, c) {
   }
 }
 
-// 깃발 버튼
-function flagBtnAdd() {
-  flagMode = false;
-  const flagBtn = document.createElement('button');
-  topBtn.appendChild(flagBtn);
-  flagBtn.textContent = '깃발 모드: 꺼짐';
-  flagBtn.addEventListener('click', function() {
-    flagMode = !flagMode;
-    flagBtn.textContent = flagMode ? '깃발 모드: 켜짐' : '깃발 모드: 꺼짐';
-    flagBtn.classList.toggle('active');
-  });
-}
-
-// 재시작 버튼
-function startBtnAdd() {
-  const startBtn = document.createElement('button');
-  bottomBtn.appendChild(startBtn);
-  startBtn.textContent = '재시작';
-  startBtn.addEventListener('click', function() {
-    clearInterval(timer);
-    gameStart();
-  })
-}
-
-// 메인화면 버튼
-function mainBtnAdd() {
-  const mainBtn = document.createElement('button');
-  bottomBtn.appendChild(mainBtn);
-  mainBtn.textContent = '메인화면으로';
-  mainBtn.addEventListener('click', function() {
-    clearInterval(timer);
-    mainScreen();
-  })
-}
-
 // 난이도 버튼
 function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
   const diffBtn = document.createElement('button');
-  topBtn.appendChild(diffBtn);
+  diffBoard.appendChild(diffBtn);
   diffBtn.textContent = diff;
   diffBtn.addEventListener('click', function() {
     size = sizeDiff;
     board.style.setProperty('--size', size);
     mineTotal = mineTotalDiff;
-    gameScreen();
+    difficulty = diff;
+    gameScreenShow();
     gameStart(); 
-  })
+  });
 }
 
 // 시간 표시
@@ -300,7 +284,7 @@ function timeCount() {
     let curTime = Date.now();
     let time = ((curTime - startTime) / 1000).toFixed(1);
     timeMessage.textContent = `지난 시간: ${time}s`;
-  }, 5); 
+  }, 5);
 }
 
 // 주변 8칸 순회
