@@ -1,10 +1,69 @@
 * {
   box-sizing: border-box;
+} 
+body {
+  margin: 0;
+}
+#mainScreen {
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 15dvh;
+}
+#mainScreenContent {
+  display: flex;
+  flex-direction: column;
+}
+#title {
+  font-size: min(100px, 18vw);
+  font-weight: bold;
+  font-family: sans-serif;
+}
+#mainScreenBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+#diffBoard {
+  display: flex;
+  flex-direction: column;
+  gap: 3dvh;
+}
+#gameScreen {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+#gameScreen::before {
+  content: '';
+  flex-grow: 3;
+}
+#gameScreen::after {
+  content: '';
+  flex-grow: 5;
+}
+#gameScreenContent {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  gap: 1dvh;
+}
+#gameScreenTopMessage {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+#bottomBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 #board {
   display: grid;
   --size: 9;
-  grid-template-columns: repeat(var(--size), 30px);
+  --cell: clamp(20px, calc((min(100dvh,100vw) - 10px)/var(--size)), 30px);
+  grid-template-columns: repeat(var(--size), var(--cell));
   user-select: none;
   -webkit-touch-callout: none;
 }
@@ -15,10 +74,39 @@
   font-weight: bold;
   font-family: sans-serif;
   user-select: none;
-  width: 30px;
-  height: 30px;
+  width: var(--cell);
+  height: var(--cell);
   background-color: lightgray;
   border: 1px solid gray; 
+}
+#scoreScreen {
+  display: flex;
+  height: 100dvh;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3dvh;
+  padding-bottom: 10dvh;
+}
+#scoreBox {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+#scoreScreenBtn {
+  display: flex;
+  justify-content: flex-end;
+}
+#mainBtn2 {
+  margin-right: 3dvh;
+}
+.clickBtn {
+  width: 18dvh;
+  height: 4.5dvh;
+}
+.scoreText {
+  font-size: 4dvh;
+  font-weight: bold;
+  font-family: sans-serif;
 }
 .open {
   background-color: white;
@@ -30,5 +118,5 @@
   background-color: yellow;
 }
 .hidden {
-  display: none;
+  display: none !important;
 }

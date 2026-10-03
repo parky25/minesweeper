@@ -155,10 +155,14 @@ function gameWin() {
   let recName = 'minesweeper-bestscore-' + difficulty;
   let bestRec = Number(localStorage.getItem('recName'));
   if (bestRec !== 0) {
-    if (timeRec < bestRec) {bestRec = timeRec;}
+    if (timeRec < bestRec) {
+      bestRec = timeRec;
+      winMessage.textContent = '🎉 승리! 신기록 갱신!';
+    }
   }
   else {
     bestRec = timeRec;
+    winMessage.textContent = '🎉 승리! 신기록 갱신!';
   }
   localStorage.setItem(recName, bestRec);
 }
@@ -303,6 +307,7 @@ function click(r, c) {
 function diffBtnAdd(diff, sizeDiff, mineTotalDiff) {
   const diffBtn = document.createElement('button');
   diffBoard.appendChild(diffBtn);
+  diffBtn.classList.add('clickBtn');
   diffBtn.textContent = diffDic[diff];
   diffBtn.addEventListener('click', function() {
     size = sizeDiff;

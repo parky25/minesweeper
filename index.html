@@ -8,29 +8,40 @@
 </head>
 <body>
   <div id="mainScreen">
-    <div id="diffBoard"></div>
-    <div id="settingBtn">
-      <button id="scoreBtn"></button>
+    <div id="mainScreenContent">
+      <div id="title">지뢰찾기</div>
+      <div id="mainScreenBtn">
+        <div id="diffBoard"></div>
+        <button id="scoreBtn" class="clickBtn"></button>
+      </div>
     </div>
   </div>
   <div id="gameScreen">
-    <div id="timeMessage"></div>
-    <div id="mineNumMessage"></div>
-    <div id="topBtn">
-      <button id="flagBtn"></button>
+    <div id="gameScreenContent">
+      <div id="gameScreenTopMessage">
+        <div id="timeMessage"></div>
+        <div id="mineNumMessage"></div>
+      </div>
+      <div id="topBtn">
+        <button id="flagBtn"></button>
+      </div>
+      <div id="board"></div>
+      <div id="bottomBtn">
+        <button id="startBtn"></button>
+        <button id="mainBtn"></button>
+      </div>
+      <div id="winMessage"></div>
     </div>
-    <div id="board"></div>
-    <div id="bottomBtn">
-      <button id="startBtn"></button>
-      <button id="mainBtn"></button>
-    </div>
-    <div id="winMessage"></div>
   </div>
   <div id="scoreScreen">
-    <div id="easyBest"></div>
-    <div id="normalBest"></div>
-    <div id="hardBest"></div>
-    <button id="mainBtn2"></button>
+    <div id="scoreBox">
+      <div id="easyBest" class=scoreText></div>
+      <div id="normalBest" class=scoreText></div>
+      <div id="hardBest" class=scoreText></div>
+    </div>
+    <div id="scoreScreenBtn">
+      <button id="mainBtn2" class="clickBtn"></button>
+    </div>
   </div>
   <script src="script.js"></script>
 </body>
